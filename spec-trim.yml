@@ -1,0 +1,63 @@
+name: TranslationExercise
+options:
+  bundleIdPrefix: app.translationexercise
+  deploymentTarget:
+    iOS: "18.0"
+    macOS: "15.0"
+  developmentLanguage: zh-Hans
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+targets:
+  TranslationCore:
+    type: framework
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: TranslationExercise/Services
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.translationexercise.core
+        GENERATE_INFOPLIST_FILE: YES
+        DEFINES_MODULE: YES
+  TranslationExercise:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: TranslationExercise
+        excludes:
+          - Services/**
+    dependencies:
+      - target: TranslationCore
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.translationexercise.daily
+        PRODUCT_NAME: LinguaLine
+        PRODUCT_MODULE_NAME: TranslationExercise
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking: YES
+        INFOPLIST_KEY_CFBundleDisplayName: LinguaLine
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: 用于连接你在设置里填写的本机大模型服务。
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.education
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    preBuildScripts:
+      - name: Sync logo into asset catalog
+        script: cp "${SRCROOT}/TranslationExercise/Resources/Logo.svg" "${SRCROOT}/TranslationExercise/Resources/Assets.xcassets/Logo.imageset/Logo.svg"
+    scheme:
+      testTargets:
+        - TranslationExerciseTests
+  TranslationExerciseTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: TranslationExerciseTests
+    dependencies:
+      - target: TranslationCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.translationexercise.tests
