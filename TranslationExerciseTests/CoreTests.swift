@@ -442,6 +442,15 @@ final class DailyAndHistoryTests: XCTestCase {
         XCTAssertTrue(DayKey.matches(legacy, day: day, language: .english, direction: .zhToForeign, calendar: calendar))
         XCTAssertTrue(DayKey.matches(extra, day: day, language: .english, direction: .zhToForeign, calendar: calendar))
         XCTAssertFalse(DayKey.matches(extra, day: day, language: .english, direction: .foreignToZh, calendar: calendar))
+        let chinese = DayKey.dailyKey(day: day, language: .english, direction: .zhToForeign, native: .chinese, calendar: calendar)
+        let japanese = DayKey.dailyKey(day: day, language: .english, direction: .zhToForeign, index: 1, native: .japanese, calendar: calendar)
+        XCTAssertEqual(chinese, legacy + "|zh")
+        XCTAssertEqual(DayKey.dailyIndex(in: chinese), 0)
+        XCTAssertEqual(DayKey.dailyIndex(in: japanese), 1)
+        XCTAssertEqual(DayKey.nativeCode(in: japanese), "ja")
+        XCTAssertTrue(DayKey.matches(chinese, day: day, language: .english, direction: .zhToForeign, native: .chinese, calendar: calendar))
+        XCTAssertFalse(DayKey.matches(chinese, day: day, language: .english, direction: .zhToForeign, native: .japanese, calendar: calendar))
+        XCTAssertFalse(DayKey.matches(legacy, day: day, language: .english, direction: .zhToForeign, native: .chinese, calendar: calendar))
     }
 
     func testDailyQuotaRejectsAnEmptyPair() {

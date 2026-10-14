@@ -42,43 +42,69 @@ struct HistoryView: View {
         }
     }
 
-    private var historyList: some View {
-        List {
-            ForEach(visible) { exercise in
-                let answers = answers(for: exercise)
-                VStack(alignment: .leading, spacing: 6) {
-                    Button {
-                        openedID = exercise.id
-                    } label: {
-                        historyRow(exercise, latest: answers.first)
-                    }
-                    .buttonStyle(.plain)
-                    if answers.count > 1 {
-                        DisclosureGroup {
-                            ForEach(Array(answers.dropFirst())) { answer in
-                                historyAnswerLine(answer)
-                            }
-                        } label: {
-                            Text("history_earlier")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+    private var syncModeTitle: LocalizedStringKey {
+        switch model.settings.syncMode {
+        case .off: "settings_sync_off"
+        case .icloud: "settings_sync_icloud"
+        case .webdav: "settings_sync_webdav"
+        }
+    }
+
+    private var syncStatusBar: some View {
+        HStack(spacing: 8) {
+            if model.syncing {
+                ProgressView()
+                    .controlSize(.small)
+                Text("history_sync_working")
+            } else if let status = model.syncStatus {
+                Image(systemName: "exclamationmark.triangle")
+                Text(status)
+                    .lineLimit(2)
+                    .textSelection(.enabled)
+            } else {
+                Image(systemName: model.settings.syncMode == .icloud ? "icloud" : "externaldrive")
+                Text(syncModeTitle)
+                if let synced = model.lastSyncAt {
+                    Text(synced, format: .dateTime.month().day().hour().minute())
+                        .monospacedDigit()
+                } else {
+                    Text("history_sync_never")
                 }
-                .swipeActions {
-                    Button("common_delete", role: .destructive) {
-                        model.deleteExercise(exercise)
-                    }
+            }
+            Spacer(minLength: 0)
+        }
+        .font(.caption)
+        .foregroundStyle(model.syncStatus == nil || model.syncing ? AnyShapeStyle(.secondary) : AnyShapeStyle(.red))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.bar)
+    }
+
+    private var historyList: some View {
+        PageScroll(refresh: { await model.syncNow() }) { _ in
+            LazyVStack(spacing: 12) {
+                ForEach(visible) { exercise in
+                    historyCard(exercise)
+                        .contextMenu {
+                            Button("common_delete", role: .destructive) {
+                                model.deleteExercise(exercise)
+                            }
+                        }
                 }
             }
         }
-        .refreshable { await model.syncNow() }
         .navigationTitle("tab_history")
         .searchable(text: $query, prompt: Text("history_search"))
         .toolbar { filterMenu }
         .overlay {
             if visible.isEmpty {
                 ContentUnavailableView("history_empty", systemImage: "clock")
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if model.settings.syncMode != .off {
+                syncStatusBar
             }
         }
         .confirmationDialog("history_confirm_older", isPresented: $confirmOlder) {
@@ -117,46 +143,86 @@ struct HistoryView: View {
         }
     }
 
-    private func historyRow(_ exercise: Exercise, latest: HistoryAnswer?) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(exercise.sourceText)
-                .font(.body)
-                .foregroundStyle(.primary)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-            if let latest {
-                Text(latest.userText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+    private func historyCard(_ exercise: Exercise) -> some View {
+        let answers = answers(for: exercise)
+        return VStack(alignment: .leading, spacing: 12) {
+            Button {
+                openedID = exercise.id
+            } label: {
+                historyRow(exercise, latest: answers.first)
             }
-            HStack(alignment: .center, spacing: 8) {
-                metaTag(model.settings.directionText(exercise.direction))
-                if let latest {
-                    Text(latest.first ? "history_answer_first" : "history_answer_review")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 8)
-                if let latest {
-                    Text("\(latest.score)")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .layoutPriority(1)
-                } else {
-                    Text("history_unfinished")
+            .buttonStyle(.plain)
+            if answers.count > 1 {
+                DisclosureGroup {
+                    ForEach(Array(answers.dropFirst())) { answer in
+                        historyAnswerLine(answer)
+                    }
+                } label: {
+                    Text("history_earlier")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .layoutPriority(1)
                 }
             }
-            Text((latest?.date ?? exercise.createdAt), format: .dateTime.year().month().day())
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
+    }
+
+    private func historyRow(_ exercise: Exercise, latest: HistoryAnswer?) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(exercise.sourceText)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                if let latest {
+                    Text(latest.userText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                HStack(alignment: .center, spacing: 8) {
+                    metaTag(model.settings.directionText(exercise.direction))
+                    if let latest {
+                        Text(latest.first ? "history_answer_first" : "history_answer_review")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    Text((latest?.date ?? exercise.createdAt), format: .dateTime.year().month().day())
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            historyScore(latest)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private func historyScore(_ latest: HistoryAnswer?) -> some View {
+        if let latest {
+            Text("\(latest.score)")
+                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, alignment: .trailing)
+        } else {
+            Label {
+                Text("history_unfinished")
+            } icon: {
+                Image(systemName: "circle.dashed")
+                    .foregroundStyle(Color.accentColor)
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(Color.primary.opacity(0.06)))
+        }
     }
 
     private func historyAnswerLine(_ answer: HistoryAnswer) -> some View {

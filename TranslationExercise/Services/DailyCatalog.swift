@@ -9,22 +9,54 @@ public enum DayKey {
         return String(format: "%04d-%02d-%02d", year, month, day)
     }
 
-    public static func dailyKey(day: Date, language: PracticeLanguage, direction: Direction, index: Int = 0, calendar: Calendar = .current) -> String {
-        let base = "\(string(from: day, calendar: calendar))|\(language.rawValue)|\(direction.rawValue)"
-        guard index > 0 else { return base }
-        return "\(base)|\(index)"
+    public static func dailyKey(
+        day: Date,
+        language: PracticeLanguage,
+        direction: Direction,
+        index: Int = 0,
+        native: PracticeLanguage? = nil,
+        calendar: Calendar = .current
+    ) -> String {
+        var key = "\(string(from: day, calendar: calendar))|\(language.rawValue)|\(direction.rawValue)"
+        if index > 0 {
+            key += "|\(index)"
+        }
+        if let native {
+            key += "|\(native.rawValue)"
+        }
+        return key
     }
 
-    public static func matches(_ key: String, day: Date, language: PracticeLanguage, direction: Direction, calendar: Calendar = .current) -> Bool {
+    public static func matches(
+        _ key: String,
+        day: Date,
+        language: PracticeLanguage,
+        direction: Direction,
+        native: PracticeLanguage? = nil,
+        calendar: Calendar = .current
+    ) -> Bool {
         guard !key.isEmpty else { return false }
-        let base = dailyKey(day: day, language: language, direction: direction, calendar: calendar)
-        return key == base || key.hasPrefix(base + "|")
+        let parts = key.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count >= 3 else { return false }
+        guard parts[0] == string(from: day, calendar: calendar) else { return false }
+        guard parts[1] == language.rawValue, parts[2] == direction.rawValue else { return false }
+        return nativeCode(in: key) == native?.rawValue
     }
 
     public static func dailyIndex(in key: String) -> Int {
         let parts = key.split(separator: "|", omittingEmptySubsequences: false)
         guard parts.count >= 4, let index = Int(parts[3]), index > 0 else { return 0 }
         return index
+    }
+
+    public static func nativeCode(in key: String) -> String? {
+        let parts = key.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count >= 4 else { return nil }
+        if Int(parts[3]) != nil {
+            guard parts.count >= 5 else { return nil }
+            return parts[4]
+        }
+        return parts[3]
     }
 }
 

@@ -8,62 +8,10 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            GeometryReader { geo in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 28) {
-                        settingsGroup("settings_group_practice") {
-                            practiceCard
-                        }
-                        settingsGroup("settings_group_review") {
-                            reviewCard
-                        }
-                        settingsGroup("settings_group_dictionary") {
-                            dictionaryCard
-                        }
-                        settingsGroup("settings_group_sync") {
-                            syncCard
-                        }
-                        settingsGroup("settings_group_interface") {
-                            interfaceCard
-                        }
-                        settingsGroup("settings_group_model") {
-                            Text("settings_token_note")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            EndpointCard(
-                                title: "settings_default",
-                                caption: "settings_general_uses",
-                                config: defaultConfig,
-                                account: "llm.default"
-                            )
-                            EndpointCard(
-                                title: "settings_translation",
-                                caption: "settings_translation_uses",
-                                config: translationConfig,
-                                account: "llm.translation"
-                            )
-                            if !otherPricedModels.isEmpty {
-                                VStack(alignment: .leading, spacing: 14) {
-                                    Text("settings_price_used")
-                                        .font(.headline)
-                                    ForEach(otherPricedModels, id: \.self) { name in
-                                        Text(name)
-                                            .font(.subheadline.weight(.semibold))
-                                        ModelPriceFields(modelName: name)
-                                    }
-                                }
-                                .glassCard()
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: PageMetrics.column)
-                    .frame(maxWidth: .infinity)
-                }
-                .frame(width: geo.size.width, height: geo.size.height)
-                .navigationTitle("tab_settings")
+            PageScroll { span in
+                settingsColumns(span)
+            }
+            .navigationTitle("tab_settings")
                 .environment(\.locale, locale)
                 .onAppear {
                     model.dictionaries.refresh()
@@ -82,7 +30,6 @@ struct SettingsView: View {
                     }
                     Button("common_close", role: .cancel) { pendingDelete = nil }
                 }
-            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -265,8 +212,110 @@ struct SettingsView: View {
         )
     }
 
+    @ViewBuilder
+    private func settingsColumns(_ span: PageSpan) -> some View {
+        if span == .paired {
+            VStack(alignment: .leading, spacing: 28) {
+                HStack(alignment: .top, spacing: 20) {
+                    practiceGroup
+                        .frame(maxWidth: .infinity, alignment: .top)
+                    reviewGroup
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+                dictionaryGroup
+                syncGroup
+                modelGroup(paired: true)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 28) {
+                practiceGroup
+                reviewGroup
+                dictionaryGroup
+                syncGroup
+                modelGroup(paired: false)
+            }
+        }
+    }
+
+    private var practiceGroup: some View {
+        settingsGroup("settings_group_practice") { practiceCard }
+    }
+
+    private var reviewGroup: some View {
+        settingsGroup("settings_group_review") { reviewCard }
+    }
+
+    private var dictionaryGroup: some View {
+        settingsGroup("settings_group_dictionary") { dictionaryCard }
+    }
+
+    private var syncGroup: some View {
+        settingsGroup("settings_group_sync") { syncCard }
+    }
+
+    private func modelGroup(paired: Bool) -> some View {
+        settingsGroup("settings_group_model") {
+            Text("settings_token_note")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if paired {
+                HStack(alignment: .top, spacing: 16) {
+                    EndpointCard(
+                        title: "settings_default",
+                        caption: "settings_general_uses",
+                        config: defaultConfig,
+                        account: "llm.default"
+                    )
+                    EndpointCard(
+                        title: "settings_translation",
+                        caption: "settings_translation_uses",
+                        config: translationConfig,
+                        account: "llm.translation"
+                    )
+                }
+            } else {
+                EndpointCard(
+                    title: "settings_default",
+                    caption: "settings_general_uses",
+                    config: defaultConfig,
+                    account: "llm.default"
+                )
+                EndpointCard(
+                    title: "settings_translation",
+                    caption: "settings_translation_uses",
+                    config: translationConfig,
+                    account: "llm.translation"
+                )
+            }
+            if !otherPricedModels.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("settings_price_used")
+                        .font(.headline)
+                    ForEach(otherPricedModels, id: \.self) { name in
+                        Text(name)
+                            .font(.subheadline.weight(.semibold))
+                        ModelPriceFields(modelName: name)
+                    }
+                }
+                .glassCard()
+            }
+        }
+    }
+
     private var practiceCard: some View {
         VStack(alignment: .leading, spacing: 16) {
+            settingRow("settings_ui_language") {
+                ChoiceMenu(selection: uiLanguage) {
+                    Text("settings_follow_system").tag(Optional<String>.none)
+                    ForEach(UILanguage.allCases) { language in
+                        Text(LocalizedStringKey(language.titleKey)).tag(Optional(language.rawValue))
+                    }
+                } title: {
+                    Text(interfaceTitle)
+                }
+            }
+            Divider()
             settingRow("settings_native_language") {
                 ChoiceMenu(selection: nativeLanguage) {
                     ForEach(PracticeLanguage.allCases) { language in
@@ -388,18 +437,16 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                 }
             }
-            Picker("settings_review_action", selection: Binding(
-                get: { kind },
-                set: { next in
-                    model.setReviewPolicy { $0 = $0.updatingChange(id: band.id, change: next.change(keeping: band.change)) }
-                }
-            )) {
-                ForEach(choices) { item in
-                    Text(item.title).tag(item)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            EqualChoiceBar(
+                choices: choices,
+                selection: Binding(
+                    get: { kind },
+                    set: { next in
+                        model.setReviewPolicy { $0 = $0.updatingChange(id: band.id, change: next.change(keeping: band.change)) }
+                    }
+                ),
+                title: { $0.title }
+            )
         }
     }
 
@@ -424,13 +471,17 @@ struct SettingsView: View {
                 Button {
                     model.setLength(preset)
                 } label: {
+                    let zhText = span(zh)
+                    let foreignText = span(foreign)
                     VStack(spacing: 2) {
                         Text(lengthTitle(preset))
                             .font(.subheadline.weight(.semibold))
-                        Text(span(zh))
+                        Text(zhText)
                             .font(.caption2)
-                        Text(span(foreign))
-                            .font(.caption2)
+                        if zhText != foreignText {
+                            Text(foreignText)
+                                .font(.caption2)
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
@@ -443,20 +494,6 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
             }
         }
-    }
-
-    private var interfaceCard: some View {
-        settingRow("settings_ui_language") {
-            ChoiceMenu(selection: uiLanguage) {
-                Text("settings_follow_system").tag(Optional<String>.none)
-                ForEach(UILanguage.allCases) { language in
-                    Text(LocalizedStringKey(language.titleKey)).tag(Optional(language.rawValue))
-                }
-            } title: {
-                Text(interfaceTitle)
-            }
-        }
-        .glassCard()
     }
 
     private func settingsGroup<Content: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
@@ -619,6 +656,88 @@ private struct ChoiceMenu<Selection: Hashable, Options: View>: View {
     }
 }
 
+private struct EqualChoiceBar<Selection: Hashable>: View {
+    var choices: [Selection]
+    @Binding var selection: Selection
+    var title: (Selection) -> LocalizedStringKey
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(choices, id: \.self) { item in
+                segment(item)
+            }
+        }
+        .padding(2)
+        .frame(maxWidth: .infinity)
+        .frame(height: ChoiceMenuMetrics.height)
+        .background {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+        }
+    }
+
+    private func segment(_ item: Selection) -> some View {
+        let selected = selection == item
+        return Button {
+            selection = item
+        } label: {
+            Text(title(item))
+                .font(.subheadline.weight(.medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundStyle(selected ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+                .background {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.accentColor.opacity(selected ? 0.18 : 0))
+                }
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct ProtocolKindPicker: View {
+    @Binding var kind: LLMProtocolKind
+
+    var body: some View {
+        HStack(spacing: 2) {
+            segment(.openAI, "settings_openai")
+            segment(.anthropic, "settings_anthropic")
+        }
+        .padding(2)
+        .frame(maxWidth: .infinity)
+        .frame(height: ChoiceMenuMetrics.height)
+        .background {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("settings_protocol")
+    }
+
+    private func segment(_ value: LLMProtocolKind, _ title: LocalizedStringKey) -> some View {
+        let selected = kind == value
+        return Button {
+            kind = value
+        } label: {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundStyle(selected ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+                .background {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.accentColor.opacity(selected ? 0.18 : 0))
+                }
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
 private struct ScriptChoice: View {
     @Binding var script: ChineseScript
 
@@ -702,12 +821,7 @@ private struct EndpointFields: View {
                 Text("settings_protocol")
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
-                Picker("settings_protocol", selection: $config.kind) {
-                    Text("settings_openai").tag(LLMProtocolKind.openAI)
-                    Text("settings_anthropic").tag(LLMProtocolKind.anthropic)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
+                ProtocolKindPicker(kind: $config.kind)
             }
             LabeledWell(title: "settings_base_url", text: $config.baseURL)
             LabeledWell(title: "settings_model", text: $config.model)

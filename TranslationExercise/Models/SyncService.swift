@@ -871,6 +871,7 @@ extension AppModel {
             try restore(record)
         }
         save()
+        bindExercisesToNative()
     }
 
     private func restore(_ record: SyncRecord) throws {

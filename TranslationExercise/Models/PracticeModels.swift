@@ -31,6 +31,7 @@ final class Exercise {
     var stockLevel: Int = -1
     var stockPresetRaw: String = ""
     var stockScriptRaw: String = ""
+    var nativeLanguageCode: String = ""
     var updatedAt: Date = Date.distantPast
 
     init(

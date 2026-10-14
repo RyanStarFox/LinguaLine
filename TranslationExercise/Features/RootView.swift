@@ -32,8 +32,8 @@ enum AppSection: String, CaseIterable, Identifiable {
     case calendar
     case review
     case history
-    case stats
     case favorites
+    case stats
     case settings
 
     var id: String { rawValue }
@@ -75,6 +75,7 @@ struct RootView: View {
             split
         } else {
             tabs
+                .tabViewStyle(.tabBarOnly)
         }
         #endif
     }

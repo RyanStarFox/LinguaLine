@@ -38,7 +38,7 @@ xcodebuild -scheme TranslationExercise -destination 'platform=macOS' -configurat
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
 ```
 
-產物是 `LinguaLine.app`。目前這個套件也掛在 [v1.0.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.0.0)。它沒有開發者憑證，也沒有公證。如果系統攔住，在 Finder 裡對應用按住 Control，再點「打開」。
+產物是 `LinguaLine.app`。目前這個套件也掛在 [v1.1.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.1.0)。它沒有開發者憑證，也沒有公證。如果系統攔住，在 Finder 裡對應用按住 Control，再點「打開」。
 
 ## 使用前
 

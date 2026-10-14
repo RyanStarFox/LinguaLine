@@ -56,6 +56,7 @@ final class AppModel {
             }
         )
         migrateTranslationKey()
+        bindExercisesToNative()
         ensureSkills()
         ensureStreak()
         dictionaries.refresh()
@@ -137,6 +138,7 @@ final class AppModel {
         settings.dailyTargetZhToForeign = pair.nativeToPractice
         settings.dailyTargetForeignToZh = pair.practiceToNative
         bumpPracticeSettings()
+        releaseUnstartedDailies()
     }
 
     func setScript(_ script: ChineseScript) {
@@ -179,6 +181,7 @@ final class AppModel {
     }
 
     func ensureDailyPair() async {
+        releaseUnstartedDailies()
         guard apiReady(for: .generate) else {
             statusMessage = LLMClientError.missingConfiguration.errorDescription
             return
@@ -323,7 +326,7 @@ final class AppModel {
                 return existing
             }
             let dailyKey = kind == .daily
-                ? DayKey.dailyKey(day: Date(), language: language, direction: direction, index: dailyIndex)
+                ? DayKey.dailyKey(day: Date(), language: language, direction: direction, index: dailyIndex, native: settings.nativeLanguage)
                 : nil
             let exercise = Exercise(
                 dailyKey: dailyKey,
@@ -333,6 +336,7 @@ final class AppModel {
                 topic: topic,
                 sourceText: text
             )
+            exercise.nativeLanguageCode = settings.nativeLanguage.rawValue
             context.insert(exercise)
             if kind == .ready {
                 exercise.stockLevel = current.level
@@ -361,7 +365,8 @@ final class AppModel {
         guard let exercise = freshStock(language: language, direction: direction).first else { return nil }
         exercise.kindRaw = kind.rawValue
         if kind == .daily {
-            exercise.dailyKey = DayKey.dailyKey(day: Date(), language: language, direction: direction, index: dailyIndex)
+            exercise.dailyKey = DayKey.dailyKey(day: Date(), language: language, direction: direction, index: dailyIndex, native: settings.nativeLanguage)
+            exercise.nativeLanguageCode = settings.nativeLanguage.rawValue
         }
         save()
         scheduleReplenish()
@@ -378,6 +383,7 @@ final class AppModel {
                 && item.stockLevel == level
                 && item.stockPresetRaw == settings.length.rawValue
                 && item.stockScriptRaw == settings.script.rawValue
+                && item.nativeLanguageCode == settings.nativeLanguage.rawValue
         }
     }
 
@@ -429,6 +435,7 @@ final class AppModel {
             let fresh = item.stockLevel == level
                 && item.stockPresetRaw == settings.length.rawValue
                 && item.stockScriptRaw == settings.script.rawValue
+                && item.nativeLanguageCode == settings.nativeLanguage.rawValue
             if !fresh {
                 context.delete(item)
                 changed = true
@@ -1108,6 +1115,33 @@ final class AppModel {
         }
     }
 
+    private func releaseUnstartedDailies() {
+        let language = settings.activeLanguage
+        let native = settings.nativeLanguage
+        var changed = false
+        for exercise in allExercises() where exercise.kind == .daily && !exercise.submitted {
+            guard exercise.languageCode == language.rawValue else { continue }
+            guard let key = exercise.dailyKey else { continue }
+            let direction = exercise.direction
+            guard DayKey.matches(key, day: Date(), language: language, direction: direction, native: native) else { continue }
+            guard DayKey.dailyIndex(in: key) >= settings.dailyTarget(for: direction) else { continue }
+            exercise.kindRaw = ExerciseKind.ready.rawValue
+            exercise.dailyKey = nil
+            if exercise.nativeLanguageCode.isEmpty {
+                exercise.nativeLanguageCode = native.rawValue
+            }
+            exercise.stockLevel = skill(language: language, direction: direction).level
+            exercise.stockPresetRaw = settings.length.rawValue
+            exercise.stockScriptRaw = settings.script.rawValue
+            exercise.updatedAt = Date()
+            changed = true
+        }
+        if changed {
+            save()
+            scheduleReplenish()
+        }
+    }
+
     private func parkInStock(_ exercise: Exercise, language: PracticeLanguage, direction: Direction) {
         exercise.kindRaw = ExerciseKind.ready.rawValue
         exercise.dailyKey = nil
@@ -1169,8 +1203,40 @@ final class AppModel {
     }
 
     private func dailyExercise(language: PracticeLanguage, direction: Direction, index: Int = 0) -> Exercise? {
-        let key = DayKey.dailyKey(day: Date(), language: language, direction: direction, index: index)
+        let key = DayKey.dailyKey(day: Date(), language: language, direction: direction, index: index, native: settings.nativeLanguage)
         return allExercises().first { $0.dailyKey == key }
+    }
+
+    func bindExercisesToNative() {
+        let native = settings.nativeLanguage.rawValue
+        var changed = false
+        for exercise in allExercises() {
+            if let key = exercise.dailyKey, !key.isEmpty {
+                if let coded = DayKey.nativeCode(in: key) {
+                    if exercise.nativeLanguageCode != coded {
+                        exercise.nativeLanguageCode = coded
+                        changed = true
+                    }
+                } else {
+                    let index = DayKey.dailyIndex(in: key)
+                    let parts = key.split(separator: "|", omittingEmptySubsequences: false).map(String.init)
+                    guard parts.count >= 3 else { continue }
+                    var rebuilt = "\(parts[0])|\(parts[1])|\(parts[2])"
+                    if index > 0 {
+                        rebuilt += "|\(index)"
+                    }
+                    rebuilt += "|\(native)"
+                    exercise.dailyKey = rebuilt
+                    exercise.nativeLanguageCode = native
+                    exercise.updatedAt = Date()
+                    changed = true
+                }
+            } else if exercise.nativeLanguageCode.isEmpty {
+                exercise.nativeLanguageCode = native
+                changed = true
+            }
+        }
+        if changed { save() }
     }
 
     private func submittedDailyIndices(in exercises: [Exercise], direction: Direction) -> Set<Int> {

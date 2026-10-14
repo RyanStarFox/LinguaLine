@@ -38,7 +38,7 @@ xcodebuild -scheme TranslationExercise -destination 'platform=macOS' -configurat
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
 ```
 
-결과물은 `LinguaLine.app`입니다. 현재 패키지는 [v1.0.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.0.0)에도 있습니다. 개발자 인증서가 없고 공증도 되어 있지 않습니다. 시스템이 막으면 Finder에서 앱을 Control-클릭한 뒤 「열기」를 선택합니다.
+결과물은 `LinguaLine.app`입니다. 현재 패키지는 [v1.1.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.1.0)에도 있습니다. 개발자 인증서가 없고 공증도 되어 있지 않습니다. 시스템이 막으면 Finder에서 앱을 Control-클릭한 뒤 「열기」를 선택합니다.
 
 ## 시작하기 전에
 

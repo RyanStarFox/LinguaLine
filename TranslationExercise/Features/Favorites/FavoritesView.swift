@@ -238,24 +238,39 @@ private struct FavoriteDetail: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(item.sourceText)
-                        .font(.title3)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassCard()
-                    Text("\(item.weightedScore)")
-                        .font(.system(size: 44, weight: .semibold, design: .rounded))
-                    DiffText(user: item.userText, corrected: item.correctedText)
-                        .glassCard()
-                    Text(item.exemplarText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassCard()
+            PageScroll { span in
+                if span == .paired {
+                    HStack(alignment: .top, spacing: 16) {
+                        Text(item.sourceText)
+                            .font(.title3)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .glassCard()
+                        favoriteResult
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(item.sourceText)
+                            .font(.title3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .glassCard()
+                        favoriteResult
+                    }
                 }
-                .padding(20)
-                .pageColumn()
             }
             .navigationTitle("tab_favorites")
         }
+    }
+
+    private var favoriteResult: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("\(item.weightedScore)")
+                .font(.system(size: 44, weight: .semibold, design: .rounded))
+            DiffText(user: item.userText, corrected: item.correctedText)
+                .glassCard()
+            Text(item.exemplarText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }

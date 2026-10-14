@@ -38,7 +38,7 @@ xcodebuild -scheme TranslationExercise -destination 'platform=macOS' -configurat
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
 ```
 
-成果物は `LinguaLine.app` です。いまのパッケージは [v1.0.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.0.0) にも付いています。開発者証明書はなく、公証もされていません。システムに止められたときは、Finder でアプリを Control キーを押しながらクリックし、「開く」を選びます。
+成果物は `LinguaLine.app` です。いまのパッケージは [v1.1.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.1.0) にも付いています。開発者証明書はなく、公証もされていません。システムに止められたときは、Finder でアプリを Control キーを押しながらクリックし、「開く」を選びます。
 
 ## 使う前に
 

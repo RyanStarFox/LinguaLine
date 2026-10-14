@@ -52,20 +52,20 @@ struct ReviewQueueView: View {
     private var queueList: some View {
         let panels = Group {
             if usesColumns {
-                HStack(spacing: 0) {
+                HStack(alignment: .top, spacing: 16) {
                     queueColumn(.zhToForeign)
-                    Divider()
                     queueColumn(.foreignToZh)
                 }
             } else {
-                VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 16) {
                     queueColumn(.zhToForeign)
-                    Divider()
                     queueColumn(.foreignToZh)
                 }
             }
         }
         return panels
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("tab_review")
             .toolbar {
@@ -93,108 +93,107 @@ struct ReviewQueueView: View {
 
     private func sentenceColumn(_ direction: Direction) -> some View {
         let items = dueItems(direction)
-        return VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(model.settings.directionText(direction))
-                    .font(.headline)
-                Spacer(minLength: 8)
-                Text("\(items.count)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            Divider()
+        return VStack(alignment: .leading, spacing: 12) {
+            columnTitle(direction, count: items.count)
             if items.isEmpty {
                 Text("review_queue_empty")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.top, 8)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
+                    LazyVStack(spacing: 12) {
                         ForEach(items) { item in
                             Button {
                                 screen = .practice(item.exerciseID)
                             } label: {
                                 queueRow(item)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
                             }
                             .buttonStyle(.plain)
-                            Divider()
-                                .padding(.leading, 16)
+                            .glassCard()
                         }
                     }
                 }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private func phraseColumn(_ direction: Direction) -> some View {
         let items = duePhrases(direction)
-        return VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(model.settings.directionText(direction))
-                    .font(.headline)
-                Spacer(minLength: 8)
-                Text("\(items.count)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            Divider()
+        return VStack(alignment: .leading, spacing: 12) {
+            columnTitle(direction, count: items.count)
             if items.isEmpty {
                 Text("phrase_empty")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.top, 8)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
+                    LazyVStack(spacing: 12) {
                         ForEach(items) { item in
                             Button {
                                 screen = .phrase(item.phraseID)
                             } label: {
-                                Text(phrases.first { $0.id == item.phraseID }?.promptText ?? "")
-                                    .font(.body)
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(3)
-                                    .multilineTextAlignment(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
+                                phraseRow(item)
                             }
                             .buttonStyle(.plain)
-                            Divider()
-                                .padding(.leading, 16)
+                            .glassCard()
                         }
                     }
                 }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func columnTitle(_ direction: Direction, count: Int) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(model.settings.directionText(direction))
+                .font(.headline)
+            Spacer(minLength: 8)
+            Text("\(count)")
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 4)
     }
 
     private func queueRow(_ item: ReviewDueItem) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(exercises.first { $0.id == item.exerciseID }?.sourceText ?? "")
+        HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(exercises.first { $0.id == item.exerciseID }?.sourceText ?? "")
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                Text(item.dueDay, format: .dateTime.year().month().day())
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Text("\(item.lastScore)")
+                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, alignment: .trailing)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+
+    private func phraseRow(_ item: PhraseDueItem) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(phrases.first { $0.id == item.phraseID }?.promptText ?? "")
                 .font(.body)
                 .foregroundStyle(.primary)
                 .lineLimit(3)
                 .multilineTextAlignment(.leading)
-            HStack {
-                Text(item.dueDay, format: .dateTime.month().day())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 8)
-                Text("\(item.lastScore)")
-                    .font(.headline)
-            }
+            Text(item.dueDay, format: .dateTime.year().month().day())
+                .font(.caption)
+                .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
@@ -300,10 +299,32 @@ private struct ReviewGradeView: View {
     var attempt: ReviewAttempt
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                LookupPassage(exercise: exercise, text: exercise.sourceText)
-                    .promptSurface()
+        PageScroll { span in
+            if span == .paired {
+                HStack(alignment: .top, spacing: 16) {
+                    LookupPassage(exercise: exercise, text: exercise.sourceText)
+                        .promptSurface()
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    gradeDetail
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 16) {
+                    LookupPassage(exercise: exercise, text: exercise.sourceText)
+                        .promptSurface()
+                    gradeDetail
+                }
+            }
+        }
+        .navigationTitle("tab_review")
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            #if os(iOS)
+            GlossBar()
+            #endif
+        }
+    }
+
+    private var gradeDetail: some View {
+        VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("review_this_score")
                         .font(.headline)
@@ -356,16 +377,8 @@ private struct ReviewGradeView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .glassCard()
-            }
-            .padding(20)
-            .pageColumn()
         }
-        .navigationTitle("tab_review")
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            #if os(iOS)
-            GlossBar()
-            #endif
-        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     private func component(_ title: LocalizedStringKey, _ value: Int) -> some View {
@@ -389,12 +402,32 @@ private struct PhrasePracticeView: View {
     @FocusState private var writing: Bool
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(phrase.promptText)
-                    .font(.title3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .promptSurface()
+        PageScroll { span in
+            if span == .paired {
+                HStack(alignment: .top, spacing: 16) {
+                    phrasePrompt
+                    phraseResponse
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 16) {
+                    phrasePrompt
+                    phraseResponse
+                }
+            }
+        }
+        .navigationTitle("phrase_phrases")
+        .onAppear { writing = true }
+    }
+
+    private var phrasePrompt: some View {
+        Text(phrase.promptText)
+            .font(.title3)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .promptSurface()
+    }
+
+    private var phraseResponse: some View {
+        VStack(alignment: .leading, spacing: 16) {
                 if revealed {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("phrase_yours")
@@ -434,12 +467,8 @@ private struct PhrasePracticeView: View {
                     Button("phrase_complete") { revealed = true }
                         .glassButton(prominent: true)
                 }
-            }
-            .padding(20)
-            .pageColumn()
         }
-        .navigationTitle("phrase_phrases")
-        .onAppear { writing = true }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     private func finish(_ remembered: Bool) {

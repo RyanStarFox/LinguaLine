@@ -38,7 +38,7 @@ xcodebuild -scheme TranslationExercise -destination 'platform=macOS' -configurat
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
 ```
 
-El resultado es `LinguaLine.app`. Este paquete también está en [v1.0.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.0.0). No tiene certificado de desarrollador ni está notarizado. Si el sistema lo bloquea, en el Finder pulsa la app con la tecla Control y elige Abrir.
+El resultado es `LinguaLine.app`. Este paquete también está en [v1.1.0](https://github.com/RyanStarFox/LinguaLine/releases/tag/v1.1.0). No tiene certificado de desarrollador ni está notarizado. Si el sistema lo bloquea, en el Finder pulsa la app con la tecla Control y elige Abrir.
 
 ## Antes de empezar
 

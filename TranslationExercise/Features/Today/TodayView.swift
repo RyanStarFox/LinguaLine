@@ -13,20 +13,15 @@ struct TodayView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView {
+            PageScroll(refresh: { await model.syncNow() }) { span in
                 VStack(alignment: .leading, spacing: 16) {
                     streakHeader
-                    ForEach(Direction.allCases.filter { model.settings.dailyTarget(for: $0) > 0 }) { direction in
-                        dailyDirection(direction)
-                    }
+                    dailyBoard(span)
                     if bothDone {
                         extraButtons
                     }
                 }
-                .padding(20)
-                .pageColumn()
             }
-            .refreshable { await model.syncNow() }
             .navigationTitle("today_title")
             .navigationDestination(for: UUID.self) { id in
                 if let exercise = exercises.first(where: { $0.id == id }) {
@@ -116,7 +111,42 @@ struct TodayView: View {
     }
 
     private var dailyRefreshID: String {
-        "\(model.settings.activeLanguageCode)|\(model.settings.dailyTarget(for: .zhToForeign))|\(model.settings.dailyTarget(for: .foreignToZh))"
+        "\(model.settings.activeLanguageCode)|\(model.settings.nativeLanguageCode)|\(model.settings.dailyTarget(for: .zhToForeign))|\(model.settings.dailyTarget(for: .foreignToZh))"
+    }
+
+    @ViewBuilder
+    private func dailyBoard(_ span: PageSpan) -> some View {
+        if span == .paired {
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(pairedRows, id: \.self) { index in
+                    HStack(alignment: .top, spacing: 16) {
+                        ForEach(activeDirections) { direction in
+                            if dailySlots(direction).contains(index) {
+                                dailyCard(
+                                    direction,
+                                    index: index,
+                                    includePlacement: index == dailySlots(direction).first,
+                                    slotLabel: dailySlots(direction).count > 1 ? "\(index + 1)" : nil,
+                                    stretch: true
+                                )
+                            } else {
+                                Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(activeDirections) { direction in
+                    dailyDirection(direction)
+                }
+            }
+        }
+    }
+
+    private var pairedRows: [Int] {
+        Array(Set(activeDirections.flatMap { dailySlots($0) })).sorted()
     }
 
     @ViewBuilder
@@ -127,12 +157,13 @@ struct TodayView: View {
                 direction,
                 index: index,
                 includePlacement: index == slots.first,
-                slotLabel: slots.count > 1 ? "\(index + 1)" : nil
+                slotLabel: slots.count > 1 ? "\(index + 1)" : nil,
+                stretch: false
             )
         }
     }
 
-    private func dailyCard(_ direction: Direction, index: Int, includePlacement: Bool, slotLabel: String?) -> some View {
+    private func dailyCard(_ direction: Direction, index: Int, includePlacement: Bool, slotLabel: String?, stretch: Bool) -> some View {
         let exercise = daily(direction, index: index)
         let skill = skills.first { $0.languageCode == model.settings.activeLanguage.rawValue && $0.direction == direction }
         let level = skill?.level ?? Difficulty.skippedLevel
@@ -176,13 +207,17 @@ struct TodayView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
+                    if stretch {
+                        Spacer(minLength: 0)
+                    }
                     dailyStatus(exercise)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: stretch ? .infinity : nil, alignment: .topLeading)
                 .contentShape(Rectangle())
                 .foregroundStyle(.primary)
             }
             .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, maxHeight: stretch ? .infinity : nil, alignment: .topLeading)
 
             if needsTest {
                 HStack {
@@ -196,7 +231,7 @@ struct TodayView: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: stretch ? .infinity : nil, alignment: .topLeading)
         .glassCard()
     }
 
@@ -212,10 +247,19 @@ struct TodayView: View {
                     componentScore("review_elegance", exercise.elegance)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         } else {
-            Text("history_unfinished")
-                .font(.system(size: 44, weight: .semibold, design: .rounded))
-                .foregroundStyle(.red)
+            Label {
+                Text("history_unfinished")
+            } icon: {
+                Image(systemName: "circle.dashed")
+                    .foregroundStyle(Color.accentColor)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Capsule().fill(Color.primary.opacity(0.06)))
         }
     }
 
@@ -286,11 +330,17 @@ struct TodayView: View {
         }
     }
 
+    private var activeDirections: [Direction] {
+        let listed = Direction.allCases.filter { direction in
+            model.settings.dailyTarget(for: direction) > 0 || todaysDailies(direction).contains(where: \.submitted)
+        }
+        return listed
+    }
+
     private func dailySlots(_ direction: Direction) -> [Int] {
         let target = model.settings.dailyTarget(for: direction)
-        guard target > 0 else { return [] }
-        var slots = Set(0..<target)
-        for exercise in todaysDailies(direction) {
+        var slots = Set(target > 0 ? Array(0..<target) : [])
+        for exercise in todaysDailies(direction) where exercise.submitted {
             let index = DayKey.dailyIndex(in: exercise.dailyKey ?? "")
             if index >= target {
                 slots.insert(index)
@@ -309,13 +359,14 @@ struct TodayView: View {
                 exercise.dailyKey ?? "",
                 day: Date(),
                 language: model.settings.activeLanguage,
-                direction: direction
+                direction: direction,
+                native: model.settings.nativeLanguage
             )
         }
     }
 
     private func daily(_ direction: Direction, index: Int) -> Exercise? {
-        let key = DayKey.dailyKey(day: Date(), language: model.settings.activeLanguage, direction: direction, index: index)
+        let key = DayKey.dailyKey(day: Date(), language: model.settings.activeLanguage, direction: direction, index: index, native: model.settings.nativeLanguage)
         return exercises.first { $0.dailyKey == key && $0.kind == .daily }
     }
 

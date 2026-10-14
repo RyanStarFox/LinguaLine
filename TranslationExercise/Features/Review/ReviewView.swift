@@ -16,109 +16,18 @@ struct ReviewView: View {
     @State private var answerSelection = ""
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                sourcePassage
-                if foldsAnswers {
-                    if pickingPhrase {
-                        correctedCard
-                    }
-                    answerLog
-                } else {
-                    scoreBlock(
-                        title: "review_total",
-                        total: exercise.weightedScore,
-                        faith: exercise.faithfulness,
-                        express: exercise.expressiveness,
-                        elegance: exercise.elegance
-                    )
-                    .glassCard()
-                    if !exercise.errorTags.isEmpty {
-                        FlowTags(tags: exercise.errorTags)
-                    }
-                    correctedCard
+        PageScroll { span in
+            if span == .paired {
+                HStack(alignment: .top, spacing: 16) {
+                    correctionColumn
+                    exemplarColumn
                 }
-                HStack(spacing: 8) {
-                    Button(pickingPhrase ? "phrase_done" : "phrase_pick") {
-                        pickingPhrase.toggle()
-                        if pickingPhrase {
-                            model.clearGloss()
-                        }
-                    }
-                    .glassButton(prominent: false)
-                    .disabled(model.isWorking)
-                    Button("review_regrade") {
-                        Task { await model.regrade(exercise: exercise) }
-                    }
-                    .glassButton(prominent: false)
-                    .disabled(model.isWorking)
+            } else {
+                VStack(alignment: .leading, spacing: 16) {
+                    correctionColumn
+                    exemplarColumn
                 }
-                savedPhrases
-                if model.isWorking {
-                    HStack(spacing: 8) {
-                        ProgressView()
-                        Text(model.workCaption ?? String(localized: "ai_grading"))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                if let message = model.statusMessage {
-                    Text(message)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                }
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("review_exemplar")
-                        .font(.headline)
-                    LookupPassage(exercise: exercise, text: exercise.exemplarText)
-                    scoreBlock(
-                        title: "review_exemplar_score",
-                        total: exercise.exemplarWeightedScore,
-                        faith: exercise.exemplarFaithfulness,
-                        express: exercise.exemplarExpressiveness,
-                        elegance: exercise.exemplarElegance
-                    )
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .glassCard()
-                if !foldsAnswers, !exerciseAttempts.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("tab_review")
-                            .font(.headline)
-                        ForEach(exerciseAttempts) { attempt in
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(attempt.createdAt, format: .dateTime.year().month().day())
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(attempt.userText)
-                                Text("\(attempt.weightedScore)")
-                                    .font(.system(size: 32, weight: .semibold, design: .rounded))
-                                HStack {
-                                    scoreChip("review_faith", attempt.faithfulness)
-                                    scoreChip("review_express", attempt.expressiveness)
-                                    scoreChip("review_elegance", attempt.elegance)
-                                }
-                                if !attempt.correctedText.isEmpty {
-                                    Text("review_corrected")
-                                        .font(.subheadline)
-                                    Text(attempt.correctedText)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-                }
-                Button(saved ? "review_saved" : "review_favorite") {
-                    model.favorite(exercise)
-                    saved = true
-                }
-                .glassButton(prominent: true)
-                .disabled(saved)
             }
-            .padding(20)
-            .pageColumn()
         }
         .navigationTitle("review_total")
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -138,6 +47,116 @@ struct ReviewView: View {
             let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
             if !trimmed.isEmpty { answerDraft = trimmed }
         }
+    }
+
+    private var correctionColumn: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sourcePassage
+            if foldsAnswers {
+                if pickingPhrase {
+                    correctedCard
+                }
+                answerLog
+            } else {
+                scoreBlock(
+                    title: "review_total",
+                    total: exercise.weightedScore,
+                    faith: exercise.faithfulness,
+                    express: exercise.expressiveness,
+                    elegance: exercise.elegance
+                )
+                .glassCard()
+                if !exercise.errorTags.isEmpty {
+                    FlowTags(tags: exercise.errorTags)
+                }
+                correctedCard
+            }
+            HStack(spacing: 8) {
+                Button(pickingPhrase ? "phrase_done" : "phrase_pick") {
+                    pickingPhrase.toggle()
+                    if pickingPhrase {
+                        model.clearGloss()
+                    }
+                }
+                .glassButton(prominent: false)
+                .disabled(model.isWorking)
+                Button("review_regrade") {
+                    Task { await model.regrade(exercise: exercise) }
+                }
+                .glassButton(prominent: false)
+                .disabled(model.isWorking)
+            }
+            savedPhrases
+            if model.isWorking {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text(model.workCaption ?? String(localized: "ai_grading"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            if let message = model.statusMessage {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private var exemplarColumn: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("review_exemplar")
+                    .font(.headline)
+                LookupPassage(exercise: exercise, text: exercise.exemplarText)
+                scoreBlock(
+                    title: "review_exemplar_score",
+                    total: exercise.exemplarWeightedScore,
+                    faith: exercise.exemplarFaithfulness,
+                    express: exercise.exemplarExpressiveness,
+                    elegance: exercise.exemplarElegance
+                )
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+            if !foldsAnswers, !exerciseAttempts.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("tab_review")
+                        .font(.headline)
+                    ForEach(exerciseAttempts) { attempt in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(attempt.createdAt, format: .dateTime.year().month().day())
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(attempt.userText)
+                            Text("\(attempt.weightedScore)")
+                                .font(.system(size: 32, weight: .semibold, design: .rounded))
+                            HStack {
+                                scoreChip("review_faith", attempt.faithfulness)
+                                scoreChip("review_express", attempt.expressiveness)
+                                scoreChip("review_elegance", attempt.elegance)
+                            }
+                            if !attempt.correctedText.isEmpty {
+                                Text("review_corrected")
+                                    .font(.subheadline)
+                                Text(attempt.correctedText)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard()
+            }
+            Button(saved ? "review_saved" : "review_favorite") {
+                model.favorite(exercise)
+                saved = true
+            }
+            .glassButton(prominent: true)
+            .disabled(saved)
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     private var correctedCard: some View {

@@ -261,6 +261,114 @@
         }
       }
     },
+    "stats_arrange_wide": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "这是宽屏的排列。拖动卡片改变位置，点眼睛隐藏。两张半宽卡片会并排，整行则独占一行。窄屏的排列另外保存。" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "這是寬螢幕的排列。拖動卡片改變位置，點眼睛隱藏。兩張半寬卡片會並排，整列則獨占一列。窄螢幕的排列另外保存。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This is the wide layout. Drag a card to move it, and use the eye to hide it. Two half-width cards sit side by side. The narrow layout is saved separately." } },
+        "ja": { "stringUnit": { "state": "translated", "value": "これは広い画面の並びです。ドラッグで位置を変え、目のアイコンで隠せます。半幅のカードは二つ並びます。狭い画面の並びは別に保存されます。" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "넓은 화면 배치입니다. 끌어 옮기고, 눈 아이콘으로 숨깁니다. 반 너비 카드 두 장은 나란히 놓입니다. 좁은 화면 배치는 따로 저장됩니다." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Disposition large. Glissez une carte pour la déplacer, et l’œil pour la masquer. Deux cartes en demi-largeur se placent côte à côte. La disposition étroite est enregistrée à part." } },
+        "de": { "stringUnit": { "state": "translated", "value": "Dies ist das breite Layout. Ziehen Sie eine Karte, und blenden Sie sie mit dem Auge aus. Zwei halbe Karten stehen nebeneinander. Das schmale Layout wird getrennt gespeichert." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Esta es la disposición ancha. Arrastra una tarjeta para moverla y usa el ojo para ocultarla. Dos de medio ancho quedan juntas. La disposición estrecha se guarda aparte." } }
+      }
+    },
+    "stats_arrange_narrow": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "这是窄屏的排列。拖动卡片改变上下顺序，点眼睛隐藏。这里和宽屏分开保存。" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "這是窄螢幕的排列。拖動卡片改變上下順序，點眼睛隱藏。這裡和寬螢幕分開保存。" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This is the narrow layout. Drag a card to change the order, and use the eye to hide it. It is saved separately from the wide layout." } },
+        "ja": { "stringUnit": { "state": "translated", "value": "これは狭い画面の並びです。ドラッグで順序を変え、目のアイコンで隠せます。広い画面とは別に保存されます。" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "좁은 화면 배치입니다. 끌어 순서를 바꾸고, 눈 아이콘으로 숨깁니다. 넓은 화면과 따로 저장됩니다." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Disposition étroite. Glissez une carte pour changer l’ordre, et l’œil pour la masquer. Elle est enregistrée à part de la disposition large." } },
+        "de": { "stringUnit": { "state": "translated", "value": "Dies ist das schmale Layout. Ziehen Sie eine Karte, und blenden Sie sie mit dem Auge aus. Es wird getrennt vom breiten Layout gespeichert." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Esta es la disposición estrecha. Arrastra una tarjeta para cambiar el orden y usa el ojo para ocultarla. Se guarda aparte de la disposición ancha." } }
+      }
+    },
+    "stats_arrange_shown": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "显示中" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "顯示中" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Shown" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "表示中" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "표시" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Affichés" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Sichtbar" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Visibles" } }
+      }
+    },
+    "stats_arrange_hidden": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "不显示" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "不顯示" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Hidden" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "非表示" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "숨김" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Masqués" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Ausgeblendet" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Ocultos" } }
+      }
+    },
+    "stats_arrange_hidden_empty": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "拖到这里即可隐藏" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "拖到這裡即可隱藏" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Drop here to hide" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ここにドロップすると隠します" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "여기로 끌어 숨기기" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Déposer ici pour masquer" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Zum Ausblenden hier ablegen" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Suelta aquí para ocultar" } }
+      }
+    },
+    "stats_arrange_span_full": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "整行" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "整列" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Full width" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "1行" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "한 줄" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Pleine largeur" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Ganze Zeile" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Fila completa" } }
+      }
+    },
+    "stats_arrange_span_half": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "半宽" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "半寬" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Half width" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "半分" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "절반" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Demi-largeur" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Halb" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Medio ancho" } }
+      }
+    },
+    "stats_arrange_reset": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "恢复默认" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "恢復預設" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Reset" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "初期状態に戻す" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "기본값" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Réinitialiser" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Zurücksetzen" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Restablecer" } }
+      }
+    },
+    "stats_arrange_end": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "拖到这里放在最后" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "拖到這裡放在最後" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Drop here to move to the end" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ここにドロップすると末尾へ" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "여기로 끌어 맨 아래로" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Déposer ici pour mettre à la fin" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Zum Ans-Ende-Stellen hier ablegen" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Suelta aquí para ponerla al final" } }
+      }
+    },
     "stats_arrange": {
       "localizations": {
         "zh-Hans": {
@@ -5229,6 +5337,30 @@
         }
       }
     },
+    "history_sync_working": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "正在同步" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "正在同步" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Syncing" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "同期中" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "동기화 중" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Synchronisation" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Wird synchronisiert" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Sincronizando" } }
+      }
+    },
+    "history_sync_never": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "尚未同步" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "尚未同步" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Not synced yet" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "未同期" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "아직 동기화하지 않음" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Pas encore synchronisé" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Noch nicht synchronisiert" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Aún no sincronizado" } }
+      }
+    },
     "history_empty": {
       "localizations": {
         "zh-Hans": {
@@ -6898,13 +7030,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "界面语言"
+            "value": "软件语言"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "介面語言"
+            "value": "軟體語言"
           }
         },
         "en": {
@@ -13199,6 +13331,18 @@
             "value": "Semana"
           }
         }
+      }
+    },
+    "streak_day_score": {
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld分" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "%lld分" } },
+        "en": { "stringUnit": { "state": "translated", "value": "%lld pts" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "%lld点" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "%lld점" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "%lld pts" } },
+        "de": { "stringUnit": { "state": "translated", "value": "%lld Pkt." } },
+        "es": { "stringUnit": { "state": "translated", "value": "%lld pts" } }
       }
     },
     "streak_month_average": {

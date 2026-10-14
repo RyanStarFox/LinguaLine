@@ -11,38 +11,18 @@ struct PracticeView: View {
     @State private var glossTask: Task<Void, Never>?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                PassageText(text: exercise.sourceText, selection: $selection)
-                    .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
-                    .promptSurface()
-                if showsInlineGloss {
-                    glossPanel
+        PageScroll { span in
+            if span == .paired {
+                HStack(alignment: .top, spacing: 16) {
+                    passageColumn
+                    answerColumn(span)
                 }
-                TextField("practice_placeholder", text: $draft, axis: .vertical)
-                    .lineLimit(6...14)
-                    .textFieldStyle(.plain)
-                    .glassCard()
-                HStack(spacing: 12) {
-                    Button("practice_submit") {
-                        Task { await commit() }
-                    }
-                    .glassButton(prominent: true)
-                    .keyboardShortcut(.defaultAction)
-                    .disabled(model.isWorking || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    if model.isWorking {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .controlSize(.small)
-                            Text(model.workCaption ?? String(localized: "ai_grading"))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+            } else {
+                VStack(alignment: .leading, spacing: 16) {
+                    passageColumn
+                    answerColumn(span)
                 }
             }
-            .padding(20)
-            .pageColumn()
         }
         .navigationTitle(model.settings.directionText(exercise.direction))
         .safeAreaInset(edge: .bottom) {
@@ -71,6 +51,45 @@ struct PracticeView: View {
         .onChange(of: selection) { _, value in
             scheduleLookup(value)
         }
+    }
+
+    private var passageColumn: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            PassageText(text: exercise.sourceText, selection: $selection)
+                .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+                .promptSurface()
+            if showsInlineGloss {
+                glossPanel
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private func answerColumn(_ span: PageSpan) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            TextField("practice_placeholder", text: $draft, axis: .vertical)
+                .lineLimit(span == .paired ? 10...28 : 6...14)
+                .textFieldStyle(.plain)
+                .glassCard()
+            HStack(spacing: 12) {
+                Button("practice_submit") {
+                    Task { await commit() }
+                }
+                .glassButton(prominent: true)
+                .keyboardShortcut(.defaultAction)
+                .disabled(model.isWorking || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                if model.isWorking {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text(model.workCaption ?? String(localized: "ai_grading"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     private var showsBottomGloss: Bool {
