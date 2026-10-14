@@ -1,6 +1,8 @@
+简体中文 | [繁體中文](README.zh-Hant.md) | [English](README.en.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
+
 # 译笺
 
-每天练几句翻译。应用在中文系统里叫译笺，在英文系统里叫 LinguaLine，文件名始终是 `LinguaLine.app`。
+每天练几句翻译。应用在简体中文系统里叫译笺，在繁体中文里叫譯箋，在日语里叫訳箋，其他语言里叫 LinguaLine。文件名始终是 `LinguaLine.app`。
 
 题目、批改和范例都走你自己的大模型接口。练习记录留在本机，不需要账号。
 
